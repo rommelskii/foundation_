@@ -1,0 +1,11 @@
+# Core Inference Engine
+ultralytics
+
+# Image Processing and Computer Vision
+opencv-python
+
+# Math and Data Structures (usually installed with ultralytics)
+numpy
+
+# Image Handling (needed for Tkinter/React integrations)
+Pillow
