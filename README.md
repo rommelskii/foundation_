@@ -1,3 +1,6 @@
+# EXPERIMENTAL BRANCH
+View the backend and frontend folders for testing possible technologies for implementation.
+
 # Foundation Filter
 
 Foundation Filter is a Raspbian-hosted, containerized application designed to process a live webcam feed and display it on a television via HDMI. The system detects faces in real-time and applies a digital filter overlay onto the detected subjects.
