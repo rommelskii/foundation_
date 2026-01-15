@@ -5,7 +5,11 @@ This file contains the modules for performing frame generation for identifying f
 It also contains the helper functions for extracting the face centroids.
 """
 
-from PIL import ImageDraw
+import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+from PIL import Image, ImageDraw
+import numpy as np
 
 def frame_gen(model, frame):
     # Arguments: model (YOLO model), frame (current frame in PIL format)
@@ -16,7 +20,50 @@ def frame_gen(model, frame):
     )
     return results
 
-def get_face_coords(model_results):
+def get_centroid(landmarks, indices, img_w, img_h):
+    x_coords = [landmarks[i].x for i in indices]
+    y_coords = [landmarks[i].y for i in indices]
+    
+    mean_x = sum(x_coords) / len(indices)
+    mean_y = sum(y_coords) / len(indices)
+    
+    return int(mean_x * img_w), int(mean_y * img_h)
+
+def media_get_coords(frame, model_path='face_landmarker.task', max_faces=5):
+    centroids = []
+    base_options = python.BaseOptions(model_asset_path=model_path)
+    options = vision.FaceLandmarkerOptions(
+        base_options = base_options,
+        output_face_blendshapes = False,
+        num_faces = max_faces,
+        running_mode = vision.RunningMode.IMAGE
+    )
+
+    np_frame = np.array(frame)
+    mp_frame = mp.Image(image_format=mp.ImageFormat.SRGB, data=np_frame)
+    img_w, img_h = frame.size
+
+    with vision.FaceLandmarker.create_from_options(options) as landmarker:
+        detection_result = landmarker.detect(mp_frame)
+
+    if detection_result.face_landmarks:
+        for landmarks in detection_result.face_landmarks:
+            sum_x = sum([lm.x for lm in landmarks])
+            sum_y = sum([lm.y for lm in landmarks])
+            count = len(landmarks)
+
+            avg_x = sum_x / count
+            avg_y = sum_y / count
+
+            cx = int(avg_x * img_w)
+            cy = int(avg_y * img_h)    
+            centroids.append([cx,cy])
+    else:
+        print("No faces were detected in the image.")
+
+    return centroids 
+
+def yolo_get_coords(model_results):
     # Arguments: model_results (Result tensor from YOLO), frame (current frame in PIL format)
     # Returns: Array of face centroids
     ret = []

@@ -1,13 +1,26 @@
+from face import *
 from ultralytics import YOLO
+from PIL import Image
 
-# Load the specialized face detection model
-model = YOLO('./models/yolov8n-face.pt') 
-img_path = './images/faces_image.jpg'
+def main():
+    frame_dir = './images/faces_image.jpg'
 
-results = model.predict(
-    source=img_path,
-    save=True,               # Tells YOLO to save the image
-    project='./', # The top-level directory
-    name='results',     # The sub-directory name
-    exist_ok=True            # Overwrites if the folder already exists
-)
+    try:
+        img_pil = Image.open(frame_dir)
+        img_pil = img_pil.convert("RGB")
+    except Exception as e:
+        printf("Error: cannot convert frame to image")
+
+    coords = media_get_coords(img_pil)
+   # UNCOMMENT FOR YOLO INFERENCE
+   # model_dir = './models/yolov8n-face.pt'
+   # model = YOLO(model_dir)
+   # results = frame_gen(model, img_pil)
+   # coords = yolo_get_coords(results)
+
+    draw_circle(coords,100,img_pil)
+    img_pil.show()
+
+if __name__ == "__main__":
+    main()
+    
