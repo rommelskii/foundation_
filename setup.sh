@@ -12,9 +12,8 @@ YOLO_MODEL_NAME=yolov8n-face.pt
 echo "Building model directory..."
 mkdir -p $MEDIA_MODEL_DIR > /dev/null
 mkdir -p $YOLO_MODEL_DIR > /dev/null
-curl -o $MEDIA_MODEL_DIR/$MEDIA_MODEL_NAME $MEDIA_TASK_URL
-curl -o $YOLO_MODEL_DIR/$YOLO_MODEL_NAME $MEDIA_TASK_URL
-
+wget -O "$MEDIA_MODEL_DIR/$MEDIA_MODEL_NAME" "$MEDIA_TASK_URL"
+wget -O "$YOLO_MODEL_DIR/$YOLO_MODEL_NAME" "$YOLO_MODEL_URL"
 #create python env
 ENV_NAME=backend/env
 REQ_FILE=backend/requirements.txt

@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 class EnvVars:
     def __init__(self):
         current_dir = Path(__file__).resolve().parent
-        env_path = current_dir.parent / '.env'
+        env_path = current_dir / '.env'
         load_dotenv(dotenv_path=env_path)
 
         self.FLASK_APP = os.getenv("FLASK_APP")
@@ -21,3 +21,4 @@ class EnvVars:
         self.MEDIA_TASK = os.getenv("MEDIA_TASK")
         self.MODEL_DIR = os.getenv("MODEL_DIR")
         self.MEDIA_DIR = os.getenv("MEDIA_DIR")
+        self.PROJECT_VER = os.getenv("PROJECT_VER")
