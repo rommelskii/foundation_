@@ -68,7 +68,7 @@ def yolo_frame_gen():
     #inference
     face_data = yolo_extract_faces(yolo_model, pil_img)
     coords = yolo_get_coords(face_data)
-    sample_frame_gen = draw_circle(coords, 100, pil_img) # DELETE THIS TO REPLACE TRUE FRAME GENERATION
+    sample_frame_gen = draw_circle(coords, 25, pil_img) # DELETE THIS TO REPLACE TRUE FRAME GENERATION
 
     #b64 encode
     b64_output = encode_pillow_to_base64(sample_frame_gen)
@@ -103,7 +103,7 @@ def media_frame_gen():
     pil_img = decode_base64_to_pillow(b64_string)
 
     #inference
-    coords = media_get_coords(yolo_model, pil_img)
+    coords = media_get_coords(pil_img,envs.MEDIA_DIR)
     sample_frame_gen = draw_circle(coords, 100, pil_img) # DELETE THIS TO REPLACE TRUE FRAME GENERATION
 
     #b64 encode
