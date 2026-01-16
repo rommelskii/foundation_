@@ -1,3 +1,8 @@
+# Inference Branch
+This branch focuses on the implementation of the backend. It will involve the API for interacting with the inference
+engine either YOLOv8 or Mediapipe. The API may operate in the form of a REST API (through Flask) or by library
+import.
+
 # Foundation Filter
 
 Foundation Filter is a Raspbian-hosted, containerized application designed to process a live webcam feed and display it on a television via HDMI. The system detects faces in real-time and applies a digital filter overlay onto the detected subjects.
