@@ -1,7 +1,5 @@
-# Inference Branch
-This branch focuses on the implementation of the backend. It will involve the API for interacting with the inference
-engine either YOLOv8 or Mediapipe. The API may operate in the form of a REST API (through Flask) or by library
-import.
+# Testing Branch
+All branches must be PR'd here to undergo testing. This is also the branch for implementing unit tests.
 
 # Foundation Filter
 
