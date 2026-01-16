@@ -73,7 +73,7 @@ To automate the application on hardware startup, a **systemd target** is used. T
 * USB Web Camera.
 * HDMI Display.
 
-### Quick Start
+### Quick Start (x86/Development)
 1. Clone the repository to the local machine.
 2. Build the Docker image:
    `docker build -t foundation-filter .`
@@ -81,3 +81,107 @@ To automate the application on hardware startup, a **systemd target** is used. T
    `sudo cp foundation-filter.service /etc/systemd/system/`
 4. Enable and start the service:
    `sudo systemctl enable foundation-filter.service --now`
+
+---
+
+## Raspberry Pi 4 Deployment
+
+> **Important**: The original PyTorch/YOLOv8 stack is too resource-intensive for RPi4. This section describes the optimized ARM64 deployment using TensorFlow Lite.
+
+### Hardware Requirements (RPi4)
+
+| Component | Minimum | Recommended |
+| :--- | :--- | :--- |
+| **Raspberry Pi 4** | 4GB RAM | 8GB RAM |
+| **Storage** | 16GB microSD | 32GB+ microSD (Class 10) |
+| **Camera** | USB Webcam | Raspberry Pi Camera Module v2 |
+| **Display** | HDMI Monitor | — |
+| **Cooling** | Passive heatsink | Active fan cooling |
+
+### Performance Expectations
+
+| Metric | Original (x86) | RPi4 Lite |
+| :--- | :--- | :--- |
+| **Target FPS** | 24 fps | 5-10 fps |
+| **Inference Time** | ~20ms | ~100-200ms |
+| **RAM Usage** | ~4GB | ~1-2GB |
+| **ML Framework** | PyTorch + YOLOv8 | TensorFlow Lite + MediaPipe |
+
+### RPi4 Quick Start
+
+#### Option A: Native Installation
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd mapua_101_rommel
+
+# 2. Run the RPi4 setup script
+chmod +x setup_rpi4.sh
+./setup_rpi4.sh
+
+# 3. Activate the virtual environment
+source ~/face_detection_venv/bin/activate
+
+# 4. Run the application
+python app.py
+```
+
+#### Option B: Docker (ARM64)
+```bash
+# 1. Build the ARM64-optimized container
+docker build -t foundation-filter-rpi4 .
+
+# 2. Run with camera access
+docker run -d \
+  --name face-filter \
+  --device=/dev/video0 \
+  -p 5000:5000 \
+  --restart unless-stopped \
+  foundation-filter-rpi4
+```
+
+### Using the Lightweight Inference Module
+
+The RPi4 version uses `inference_lite.py` instead of the original `inference.py`:
+
+```python
+# Import the lightweight detector
+from backend.inference_lite import FaceDetectorLite, draw_circle
+
+# Initialize (uses MediaPipe by default - ARM optimized)
+detector = FaceDetectorLite(use_mediapipe=True, num_threads=4)
+
+# Detect faces
+boxes = detector.detect_faces(frame)
+centroids = detector.get_centroids(boxes)
+
+# Draw results
+frame = draw_circle(centroids, radius=50, frame=frame)
+```
+
+### Optional: Hardware Acceleration
+
+For better performance on RPi4, consider adding a Coral USB Accelerator:
+
+```bash
+# Install Coral Edge TPU runtime
+echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install libedgetpu1-std
+
+# Install PyCoral
+pip install pycoral
+```
+
+With Coral USB, expect **15-20+ FPS** face detection on RPi4.
+
+### Troubleshooting (RPi4)
+
+| Issue | Solution |
+| :--- | :--- |
+| Low FPS (<3) | Reduce resolution to 320x240, ensure cooling is adequate |
+| Camera not found | Run `ls /dev/video*`, add user to `video` group |
+| Out of memory | Use RPi4 8GB model, increase swap to 2GB |
+| MediaPipe import error | Install with `pip install mediapipe==0.10.14` |
+| TFLite error | Reinstall with `pip install tflite-runtime==2.14.0` |

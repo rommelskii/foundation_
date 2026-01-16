@@ -1,0 +1,47 @@
+# =============================================================================
+# Raspberry Pi 4 Optimized Requirements
+# Replaces PyTorch/Ultralytics with TensorFlow Lite for ARM efficiency
+# Target: 5-10 FPS face detection on RPi4 (4GB+ RAM recommended)
+# =============================================================================
+
+# --- Core Web Framework ---
+Flask==3.1.2
+Werkzeug==3.1.5
+Jinja2==3.1.6
+click==8.3.1
+itsdangerous==2.2.0
+blinker==1.9.0
+MarkupSafe==3.0.3
+
+# --- TensorFlow Lite (ARM optimized, replaces PyTorch) ---
+tflite-runtime==2.14.0
+
+# --- Image Processing ---
+Pillow==12.1.0
+opencv-python-headless==4.9.0.80
+numpy==2.0.2
+
+# --- MediaPipe (has ARM support via TFLite backend) ---
+mediapipe==0.10.14
+
+# --- Utilities ---
+python-dotenv==1.2.1
+requests==2.32.5
+
+# --- Optional: Visualization (lightweight) ---
+matplotlib==3.8.5
+
+# =============================================================================
+# NOTES FOR RASPBERRY PI 4:
+# 
+# 1. Use 'opencv-python-headless' instead of 'opencv-python' to reduce size
+# 2. tflite-runtime is ~10MB vs PyTorch ~2GB
+# 3. numpy 2.0.2 is compatible with tflite-runtime
+# 4. MediaPipe 0.10.14 has better ARM64 support
+#
+# Install with: pip install -r requirements_rpi4.txt
+# 
+# For hardware acceleration, also install:
+#   - libedgetpu1-std (for Coral USB Accelerator)
+#   - pycoral (for Coral TPU support)
+# =============================================================================
