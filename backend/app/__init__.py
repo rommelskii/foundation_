@@ -8,7 +8,7 @@ def create_app(config_class=None):
     from backend.app.vision.routes import vision_bp 
     from backend.app.api.routes import api_bp
 
-    app.register_blueprint(vision_bp, url_prefix="/detect")
+    app.register_blueprint(vision_bp, url_prefix="/vision")
     app.register_blueprint(api_bp, url_prefix="/api")
 
     return app

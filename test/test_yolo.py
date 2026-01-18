@@ -1,17 +1,14 @@
 import pytest
-from backend.env_helper import EnvVars
-from ultralytics import YOLO
+from backend.app.utils.env_helper import EnvVars
+from backend.app.vision.inference import YOLO_MODEL 
 from PIL import Image
 
-envs = EnvVars()
 TEST_IMAGE = "test/test_assets/people.jpg"
 
 @pytest.fixture(scope="class")
 def yolo_setup():
-    envs = EnvVars()
-    model = YOLO(envs.MODEL_DIR)
     frame = Image.open(TEST_IMAGE)
-    return model, frame
+    return YOLO_MODEL, frame
 
 class TestYoloInference:
     def test_yolo_initialization(self, yolo_setup):

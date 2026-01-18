@@ -1,5 +1,7 @@
 from flask import Blueprint, jsonify, request
 
+from backend.app.vision.inference import YOLO_MODEL
+
 from backend.app.vision.inference import yolo_extract_faces
 from backend.app.vision.inference import yolo_get_coords 
 from backend.app.vision.inference import media_get_coords 
@@ -10,6 +12,7 @@ from backend.app.utils.pillow_handler import decode_base64_to_pillow
 from backend.app.utils.pillow_handler import encode_pillow_to_base64 
 
 vision_bp = Blueprint('vision', __name__)
+envs = EnvVars()
 
 @vision_bp.route('/yolo', methods=['POST'])
 def yolo_inference():
@@ -38,7 +41,7 @@ def yolo_inference():
     pil_img = decode_base64_to_pillow(b64_string)
 
     #inference
-    face_data = yolo_extract_faces(yolo_model, pil_img)
+    face_data = yolo_extract_faces(pil_img)
     coords = yolo_get_coords(face_data)
     sample_frame_gen = draw_circle(coords, 25, pil_img) # DELETE THIS TO REPLACE TRUE FRAME GENERATION
 
@@ -75,7 +78,7 @@ def media_inference():
     pil_img = decode_base64_to_pillow(b64_string)
 
     #inference
-    coords = media_get_coords(pil_img,envs.MEDIA_DIR)
+    coords = media_get_coords(pil_img, envs.MEDIA_DIR)
     sample_frame_gen = draw_circle(coords, 100, pil_img) # DELETE THIS TO REPLACE TRUE FRAME GENERATION
 
     #b64 encode
