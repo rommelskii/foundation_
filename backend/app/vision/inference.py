@@ -9,12 +9,17 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from PIL import Image, ImageDraw
+from backend.app.utils.env_helper import EnvVars
+from ultralytics import YOLO
 import numpy as np
 
-def yolo_extract_faces(model, frame):
+envs = EnvVars()
+YOLO_MODEL = YOLO(envs.MODEL_DIR) # Singleton declaration of the yolo model
+
+def yolo_extract_faces(frame):
     # Arguments: model (YOLO model), frame (current frame in PIL format)
     # Returns: result tensor from YOLO
-    results = model.predict(
+    results = YOLO_MODEL.predict(
         source=frame,
         save=False,
     )
