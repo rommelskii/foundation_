@@ -1,46 +1,21 @@
-from flask import Flask, jsonify, request
+from flask import Blueprint, jsonify, request
 
-from backend.env_helper import EnvVars 
-from backend.pillow_handler import encode_pillow_to_base64, decode_base64_to_pillow
+from backend.app.vision.inference import YOLO_MODEL
 
-from backend.inference import yolo_extract_faces
-from backend.inference import yolo_get_coords
-from backend.inference import media_get_coords 
-from backend.inference import draw_circle 
+from backend.app.vision.inference import yolo_extract_faces
+from backend.app.vision.inference import yolo_get_coords 
+from backend.app.vision.inference import media_get_coords 
+from backend.app.vision.inference import draw_circle 
 
-from ultralytics import YOLO
+from backend.app.utils.env_helper import EnvVars 
+from backend.app.utils.pillow_handler import decode_base64_to_pillow 
+from backend.app.utils.pillow_handler import encode_pillow_to_base64 
 
-import time
-import os
-
-
-app = Flask(__name__)
+vision_bp = Blueprint('vision', __name__)
 envs = EnvVars()
 
-os.system("clear")
-
-print(f"FOUNDATION_FILTER backend ver. {envs.PROJECT_VER}")
-print(f"Abadiano, Malatag, Sangilan, Ronduen")
-
-time.sleep(1)
-
-#Check if YOLO/Mediapipe models exist
-model_path = envs.MODEL_DIR
-media_path = envs.MEDIA_DIR
-if not os.path.exists(model_path):
-    raise FileNotFoundError(f"YOLO model not found at: {os.path.abspath(model_path)}")
-if not os.path.exists(media_path):
-    raise FileNotFoundError(f"Mediapipe task not found at: {os.path.abspath(model_path)}")
-
-#Load YOLO model into memory
-yolo_model = YOLO('models/yolo/yolov8n-face.pt')
-
-@app.route('/', methods=['GET']) 
-def home():
-    return jsonify({"message": f"Running on {envs.FLASK_APP}"}), 200
-
-@app.route('/yolo', methods=['GET', 'POST'])
-def yolo_frame_gen():
+@vision_bp.route('/yolo', methods=['POST'])
+def yolo_inference():
     """
     Perform a YOLOv8 inference to do frame generation.
     
@@ -66,7 +41,7 @@ def yolo_frame_gen():
     pil_img = decode_base64_to_pillow(b64_string)
 
     #inference
-    face_data = yolo_extract_faces(yolo_model, pil_img)
+    face_data = yolo_extract_faces(pil_img)
     coords = yolo_get_coords(face_data)
     sample_frame_gen = draw_circle(coords, 25, pil_img) # DELETE THIS TO REPLACE TRUE FRAME GENERATION
 
@@ -76,8 +51,8 @@ def yolo_frame_gen():
     #ret
     return jsonify({'b64_output': b64_output}), 200
 
-@app.route("/media", methods=['GET', 'POST'])
-def media_frame_gen():
+@vision_bp.route('/media', methods=['POST'])
+def media_inference():
     """
     Performs frame generation using Mediapipe pose estimation.
 
@@ -103,7 +78,7 @@ def media_frame_gen():
     pil_img = decode_base64_to_pillow(b64_string)
 
     #inference
-    coords = media_get_coords(pil_img,envs.MEDIA_DIR)
+    coords = media_get_coords(pil_img, envs.MEDIA_DIR)
     sample_frame_gen = draw_circle(coords, 100, pil_img) # DELETE THIS TO REPLACE TRUE FRAME GENERATION
 
     #b64 encode
@@ -111,7 +86,4 @@ def media_frame_gen():
 
     #ret
     return jsonify({'b64_output': b64_output}), 200
-    
 
-if __name__ == "__main__":
-    app.run(debug=True, port=envs.API_PORT)

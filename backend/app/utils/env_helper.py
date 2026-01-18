@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 class EnvVars:
     def __init__(self):
-        current_dir = Path(__file__).resolve().parent
+        current_dir = Path(__file__).resolve().parent.parent.parent
         env_path = current_dir / '.env'
         load_dotenv(dotenv_path=env_path)
 
