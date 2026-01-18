@@ -33,7 +33,7 @@ if not os.path.exists(media_path):
     raise FileNotFoundError(f"Mediapipe task not found at: {os.path.abspath(model_path)}")
 
 #Load YOLO model into memory
-yolo_model = YOLO('models/yolo/yolov8n-face.pt')
+yolo_model = YOLO('models/yolov8n-face.pt')
 
 @app.route('/', methods=['GET']) 
 def home():
