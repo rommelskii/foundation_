@@ -3,7 +3,8 @@ import Webcam from 'react-webcam';
 
 const FilterDisplay = ({ deviceId }) => {
   const webcamRef = useRef(null);
-  const [processedImage, setProcessedImage] = useState(null);
+  const canvasRef = useRef(null);
+  const [coords, setCoords] = useState([]);
 
   const videoConstraints = {
     width: 1280,
@@ -24,9 +25,55 @@ const FilterDisplay = ({ deviceId }) => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    drawCircles();
+  }, [coords]);
+
+  const drawCircles = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 10;
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; // semi-transparent red fill
+
+    const clientWidth = canvas.clientWidth;
+    const clientHeight = canvas.clientHeight;
+    const videoAspect = 1280 / 720;
+    const clientAspect = clientWidth / clientHeight;
+
+    let scale, offsetX = 0, offsetY = 0;
+    if (clientAspect > videoAspect) {
+      // Client wider, bars on sides
+      scale = clientHeight / 720;
+      offsetX = (clientWidth - 1280 * scale) / 2;
+    } else {
+      // Client taller, bars on top bottom
+      scale = clientWidth / 1280;
+      offsetY = (clientHeight - 720 * scale) / 2;
+    }
+
+    const mirrored = true; // Webcam display is mirrored by default
+
+    coords.forEach(([x, y]) => {
+      let scaledX = offsetX + x * scale;
+      if (mirrored) {
+        scaledX = clientWidth - scaledX;
+      }
+      const scaledY = offsetY + y * scale;
+      const scaledRadius = 100 * scale;
+      ctx.beginPath();
+      ctx.arc(scaledX, scaledY, scaledRadius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+    });
+  };
+
   const sendFrameToBackend = async (base64Frame) => {
     try {
-      const response = await fetch('http://localhost:5000/yolo', { // Adjust URL if backend is on different port/host
+      console.log('Sending frame to backend...');
+      const response = await fetch('http://localhost:8080/media', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,8 +81,9 @@ const FilterDisplay = ({ deviceId }) => {
         body: JSON.stringify({ b64_input: base64Frame }),
       });
       const data = await response.json();
-      if (data.b64_output) {
-        setProcessedImage(data.b64_output);
+      console.log('Received response:', data);
+      if (data.coords) {
+        setCoords(data.coords);
       }
     } catch (error) {
       console.error('Error sending frame to backend:', error);
@@ -44,26 +92,24 @@ const FilterDisplay = ({ deviceId }) => {
 
   return (
     <div style={styles.webcamWrapper}>
-      {!processedImage ? (
-        <Webcam
-          ref={webcamRef}
-          audio={false}
-          videoConstraints={videoConstraints}
-          style={styles.webcam}
-        />
-      ) : (
-        <img
-          src={processedImage}
-          alt="Processed Feed"
-          style={styles.processedImage}
-        />
-      )}
+      <Webcam
+        ref={webcamRef}
+        audio={false}
+        videoConstraints={videoConstraints}
+        style={styles.webcam}
+      />
       {/* Filter overlay: Applies a visual effect (e.g., tint) over the video */}
       <div style={styles.filterOverlay} />
       {/* Frame overlay: Adds a decorative border/frame around the video */}
       <div style={styles.frameOverlay} />
       {/* Canvas for backend overlays (e.g., YOLOv8 stamps) - remains on top */}
-      <canvas id="overlay-canvas" style={styles.canvas} />
+      <canvas
+        ref={canvasRef}
+        id="overlay-canvas"
+        width={1280}
+        height={720}
+        style={styles.canvas}
+      />
     </div>
   );
 };
@@ -113,7 +159,7 @@ const styles = {
   webcam: {
     width: '100%',
     height: '100%',
-    objectFit: 'cover',
+    objectFit: 'contain',
   },
   processedImage: {
     width: '100%',
