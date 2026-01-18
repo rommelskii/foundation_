@@ -37,7 +37,7 @@ def yolo_get_coords(model_results):
             ret.append([(x1+x2)/2,(y1+y2)/2])
     return ret
 
-def media_get_coords(frame, model_path='face_landmarker.task', max_faces=5):
+def media_get_coords(frame, model_path=envs.MEDIA_DIR, max_faces=5):
     centroids = []
     base_options = python.BaseOptions(model_asset_path=model_path)
     options = vision.FaceLandmarkerOptions(
