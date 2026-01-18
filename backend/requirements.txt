@@ -47,3 +47,5 @@ ultralytics==8.4.3
 ultralytics-thop==2.0.18
 urllib3==2.6.3
 Werkzeug==3.1.5
+pytest
+flask-cors
